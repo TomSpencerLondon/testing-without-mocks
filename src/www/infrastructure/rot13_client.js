@@ -43,14 +43,13 @@ export class Rot13Client {
 	}
 
 	/**
-	 * Call the ROT-13 service. Returns a promise for the server response and a function for cancelling the request.
+	 * Call the ROT-13 service and return the response. Doesn't have the ability to cancel the request.
 	 * @param port the port of the ROT-13 service (the host is assumed to be 'localhost')
 	 * @param text the text to transform
 	 * @param correlationId a unique ID for this user's request
-	 * @returns {{transformPromise: Promise<string>, cancelFn: () => void}} the response promise and
-	 * cancellation function
+	 * @returns {Promise<string>} the response
 	 */
-	transform(port, text, correlationId) {
+	async transformAsync(port, text, correlationId) {
 		ensure.signature(arguments, [ Number, String, String ]);  // run-time type checker (ignore me)
 
 		// to do
