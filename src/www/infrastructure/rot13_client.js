@@ -67,6 +67,20 @@ export class Rot13Client {
 	}
 
 	/**
+	 * Call the ROT-13 service and return the response. Doesn't have the ability to cancel the request.
+	 * @param port the port of the ROT-13 service (the host is assumed to be 'localhost')
+	 * @param text the text to transform
+	 * @param correlationId a unique ID for this user's request
+	 * @returns {Promise<string>} the response
+	 */
+	async transformAsync(port, text, correlationId) {
+		ensure.signature(arguments, [ Number, String, String ]);
+
+		const { transformPromise } = this.transform(port, text, correlationId);
+		return await transformPromise;
+	}
+
+	/**
 	 * Track requests made to the ROT-13 service.
 	 * @returns {OutputTracker} the request tracker
 	 */
