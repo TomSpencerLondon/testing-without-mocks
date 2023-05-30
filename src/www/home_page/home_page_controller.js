@@ -48,9 +48,9 @@ export class HomePageController {
 	 * @returns {HttpServerResponse} HTTP response
 	 */
 	async getAsync(request, config) {
-		ensure.signature(arguments, [ HttpServerRequest, WwwConfig ]);
+		ensure.signature(arguments, [ HttpServerRequest, WwwConfig ]);  // run-time type checker (ignore me)
 
-		return homePageView.homePage();
+		// to do
 	}
 
 	/**
@@ -60,63 +60,9 @@ export class HomePageController {
 	 * @returns {Promise<HttpServerResponse>} HTTP response
 	 */
 	async postAsync(request, config) {
-		ensure.signature(arguments, [ HttpServerRequest, WwwConfig ]);
+		ensure.signature(arguments, [ HttpServerRequest, WwwConfig ]);  // run-time type checker (ignore me)
 
-		const log = config.log.bind({ endpoint: ENDPOINT, method: "POST" });
-
-		const { input, inputErr } = parseBody(await request.readBodyAsUrlEncodedFormAsync(), log);
-		if (inputErr !== undefined) return homePageView.homePage();
-
-		const { output, outputErr } = await transformAsync(this._rot13Client, this._clock, log, config, input);
-		if (outputErr !== undefined) return homePageView.homePage("ROT-13 service failed");
-
-		return homePageView.homePage(output);
+		// to do
 	}
 
-}
-
-function parseBody(formData, log) {
-	try {
-		const textFields = formData[INPUT_FIELD_NAME];
-
-		if (textFields === undefined) throw new Error(`'${INPUT_FIELD_NAME}' form field not found`);
-		if (textFields.length > 1) throw new Error(`multiple '${INPUT_FIELD_NAME}' form fields found`);
-
-		return { input: textFields[0] };
-	}
-	catch (inputErr) {
-		log.monitor({
-			message: "form parse error",
-			error: inputErr.message,
-			formData,
-		});
-		return { inputErr };
-	}
-}
-
-async function transformAsync(rot13Client, clock, log, config, input) {
-	try {
-		const { transformPromise, cancelFn } = rot13Client.transform(config.rot13ServicePort, input, config.correlationId);
-		const output = await clock.timeoutAsync(
-			TIMEOUT_IN_MS,
-			transformPromise,
-			() => timeout(log, cancelFn));
-		return { output };
-	}
-	catch (outputErr) {
-		log.emergency({
-			message: "ROT-13 service error",
-			error: outputErr,
-		});
-		return { outputErr };
-	}
-}
-
-function timeout(log, cancelFn) {
-	log.emergency({
-		message: "ROT-13 service timed out",
-		timeoutInMs: TIMEOUT_IN_MS,
-	});
-	cancelFn();
-	return "ROT-13 service timed out";
 }
