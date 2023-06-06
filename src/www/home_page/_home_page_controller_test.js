@@ -45,7 +45,10 @@ describe.only("Home Page Controller", () => {
 			const clock = Clock.createNull();
 			const controller = new HomePageController(rot13Client, clock);
 
-			const request = HttpServerRequest.createNull();
+			const request = HttpServerRequest.createNull({
+				body: "text=hello%20world",
+			});
+
 			const config = WwwConfig.createTestInstance({
 				rot13ServicePort: 123,
 				correlationId: "0000-0000",
@@ -57,7 +60,7 @@ describe.only("Home Page Controller", () => {
 
 			assert.deepEqual(rot13Requests.data, [{
 				port: 123,
-				text: "some text",
+				text: "hello world",
 				correlationId: "0000-0000"
 			}]);
 
@@ -72,7 +75,9 @@ describe.only("Home Page Controller", () => {
 			const clock = Clock.createNull();
 			const controller = new HomePageController(rot13Client, clock);
 
-			const request = HttpServerRequest.createNull();
+			const request = HttpServerRequest.createNull({
+				body: "text=hello%20world",
+			});
 			const config = WwwConfig.createTestInstance(
 				{
 					rot13ServicePort: 999,
@@ -84,10 +89,9 @@ describe.only("Home Page Controller", () => {
 			await controller.postAsync(request, config);
 
 			// Assert
-
 			assert.deepEqual(rot13Requests.data, [{
 				port: 999,
-				text: "some text",
+				text: "hello world",
 				correlationId: "my-correlation-id",
 			}]);
 		});
