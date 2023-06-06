@@ -12,7 +12,7 @@ import sound from "sound-play";
 import Colors from "../util/colors.js";
 import child_process from "node:child_process";
 
-const TIMEOUT_IN_MS = 5000;
+const TIMEOUT_IN_MS = 10000;
 const PLAY_SOUNDS = true;
 
 const SUCCESS = 0;

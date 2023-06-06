@@ -51,6 +51,7 @@ export class HomePageController {
 		ensure.signature(arguments, [ HttpServerRequest, WwwConfig ]);  // run-time type checker (ignore me)
 
 		// to do
+		return homePageView.homePage();
 	}
 
 	/**

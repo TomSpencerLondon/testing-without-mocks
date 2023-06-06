@@ -300,14 +300,26 @@ Several classes support output tracking: [HttpClient](src/node_modules/http/http
 
 The code was a green-field project, so the legacy code patterns weren't needed.
 
+### Testing without mocks course
+![image](https://github.com/TomSpencerLondon/testing-without-mocks/assets/27693622/08308ceb-b248-44bf-b61e-da8fbfe28a7d)
 
-MIT License
------------
+![image](https://github.com/TomSpencerLondon/testing-without-mocks/assets/27693622/0659c1f9-3f68-4eaf-a35c-0f29e13c84fd)
 
-Copyright (c) 2020-2023 Titanium I.T. LLC
+![image](https://github.com/TomSpencerLondon/testing-without-mocks/assets/27693622/0ac0325e-5e6c-4579-ba4d-bb38eac50715)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+#### Choice
+- Broad tests give a lot of coverage with a lot of tests
+- Unit tests deterministic and narrow but lots of them
+- Sociable tests that run all the way through but talks to outside world
+- Solitary tests don't talk to outside world
+- Interaction vs state based tests
+- Steve Freeman and Matt Price - Object oriented behavior
+- Tell don't ask and look at how behave is best
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+![image](https://github.com/TomSpencerLondon/testing-without-mocks/assets/27693622/df76a7ba-443b-4ef7-a9de-d56e4171f3d3)
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+- Sociable tests run real dependencies so the test will have false negatives
+- Interaction based tests cause false positives - update tests to match the production code
+- Nullables are production code with an off switch
+- Sociable tests fast and deterministic but not false success from state based tests
+

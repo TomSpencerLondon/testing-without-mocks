@@ -8,6 +8,8 @@ import { Rot13Client } from "../infrastructure/rot13_client.js";
 import { HomePageController } from "./home_page_controller.js";
 import { Log } from "infrastructure/log.js";
 import { Clock } from "infrastructure/clock.js";
+import {request} from "http";
+import Assert from "../../../build/util/assert.js";
 
 const IRRELEVANT_PORT = 42;
 const IRRELEVANT_INPUT = "irrelevant_input";
@@ -20,19 +22,42 @@ describe.only("Home Page Controller", () => {
 		// Challenge #1
 		it("GET renders home page", async () => {
 			// Arrange
+			const rot13Client = Rot13Client.createNull();
+			const clock = Clock.createNull();
+			const controller = new HomePageController(rot13Client, clock);
+			const request = HttpServerRequest.createNull();
+			const config = WwwConfig.createTestInstance();
 
 			// Act
+			const response = await controller.getAsync(request, config);
 
 			// Assert
+			const expected = homePageView.homePage();
+			assert.deepEqual(expected, response);
 		});
 
 		// Challenge #2a, 2b, 2c
 		it("POST asks ROT-13 service to transform text", async () => {
 			// Arrange
+			const rot13Client = Rot13Client.createNull();
+			const rot13Requests = rot13Client.trackRequests();
+
+			const clock = Clock.createNull();
+			const controller = new HomePageController(rot13Client, clock);
+
+			const request = HttpServerRequest.createNull();
+			const config = WwwConfig.createTestInstance();
 
 			// Act
-
+			await controller.postAsync(request, config);
 			// Assert
+
+			assert.deepEqual(rot13Requests.data, [{
+				port: 123,
+				text: "some text",
+				correlationId: "0000-0000"
+			}]);
+
 		});
 
 		// Challenge #3
