@@ -46,7 +46,10 @@ describe.only("Home Page Controller", () => {
 			const controller = new HomePageController(rot13Client, clock);
 
 			const request = HttpServerRequest.createNull();
-			const config = WwwConfig.createTestInstance();
+			const config = WwwConfig.createTestInstance({
+				rot13ServicePort: 123,
+				correlationId: "0000-0000",
+			});
 
 			// Act
 			await controller.postAsync(request, config);
@@ -64,11 +67,30 @@ describe.only("Home Page Controller", () => {
 		it("POST renders result of ROT-13 service call", async () => {
 			// Arrange
 
+			const rot13Client = Rot13Client.createNull();
+			const rot13Requests = rot13Client.trackRequests();
+			const clock = Clock.createNull();
+			const controller = new HomePageController(rot13Client, clock);
+
+			const request = HttpServerRequest.createNull();
+			const config = WwwConfig.createTestInstance(
+				{
+					rot13ServicePort: 999,
+					correlationId: "my-correlation-id",
+				}
+			);
+
 			// Act
+			await controller.postAsync(request, config);
 
 			// Assert
-		});
 
+			assert.deepEqual(rot13Requests.data, [{
+				port: 999,
+				text: "some text",
+				correlationId: "my-correlation-id",
+			}]);
+		});
 	});
 
 

@@ -64,7 +64,7 @@ export class HomePageController {
 		ensure.signature(arguments, [ HttpServerRequest, WwwConfig ]);  // run-time type checker (ignore me)
 
 		// to do
-		await this._rot13Client.transformAsync(123, "some text", "0000-0000");
+		await this._rot13Client.transformAsync(config.rot13ServicePort, "some text", config.correlationId);
 	}
 
 }
