@@ -40,6 +40,7 @@ export class Rot13Client {
 		ensure.signature(arguments, [ HttpClient ]);
 
 		this._httpClient = httpClient;
+		this._listener = OutputListener.create();
 	}
 
 	/**
@@ -52,8 +53,9 @@ export class Rot13Client {
 	async transformAsync(port, text, correlationId) {
 		ensure.signature(arguments, [ Number, String, String ]);  // run-time type checker (ignore me)
 
-		// to do
-		await this._httpClient.requestAsync({
+
+		this._listener.emit({port, text, correlationId});
+		const response = await this._httpClient.requestAsync({
 			host: HOST,
 			port,
 			method: "POST",
@@ -64,6 +66,9 @@ export class Rot13Client {
 			},
 			body: JSON.stringify({ text })
 		});
+
+		const parsedBody = JSON.parse(response.body);
+		return parsedBody.transformed;
 	}
 
 	/**
@@ -73,7 +78,7 @@ export class Rot13Client {
 	trackRequests() {
 		ensure.signature(arguments, []);  // run-time type checker (ignore me)
 
-		// to do
+		return this._listener.trackOutput();
 	}
 
 }
