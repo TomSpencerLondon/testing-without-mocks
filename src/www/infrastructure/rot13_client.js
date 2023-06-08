@@ -53,6 +53,17 @@ export class Rot13Client {
 		ensure.signature(arguments, [ Number, String, String ]);  // run-time type checker (ignore me)
 
 		// to do
+		await this._httpClient.requestAsync({
+			host: HOST,
+			port,
+			method: "POST",
+			path: TRANSFORM_ENDPOINT,
+			headers: {
+				"content-type": "application/json",
+				"x-correlation-id": correlationId,
+			},
+			body: JSON.stringify({ text })
+		});
 	}
 
 	/**

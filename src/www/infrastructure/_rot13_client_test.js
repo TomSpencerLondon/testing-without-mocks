@@ -22,10 +22,23 @@ describe.only("ROT-13 Service client", () => {
 		// Challenge #1
 		it("makes request", async () => {
 			// Arrange
-
+			const httpClient = HttpClient.createNull();
+			const httpRequests = httpClient.trackRequests();
+			const rot13Client = new Rot13Client(httpClient);
 			// Act
-
+			await rot13Client.transformAsync(9999, "text_to_transform", "my-correlation-id");
 			// Assert
+			assert.deepEqual(httpRequests.data, [{
+				host: HOST,
+				port: 9999,
+				path: "/rot13/transform",
+				method: "post",
+				headers: {
+					"content-type": "application/json",
+					"x-correlation-id": "my-correlation-id"
+				},
+				body: JSON.stringify({text: "text_to_transform"}),
+			}]);
 		});
 
 		// Challenge #3
