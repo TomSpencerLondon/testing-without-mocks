@@ -67,10 +67,12 @@ export class HomePageController {
 		const form = await request.readBodyAsUrlEncodedFormAsync();
 		const userInput = form[INPUT_FIELD_NAME][0];
 
-		await this._rot13Client.transformAsync(
+		const output = await this._rot13Client.transformAsync(
 			config.rot13ServicePort,
 			userInput,
 			config.correlationId);
+
+		return homePageView.homePage(output);
 	}
 
 }

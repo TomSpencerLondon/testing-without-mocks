@@ -323,3 +323,5 @@ The code was a green-field project, so the legacy code patterns weren't needed.
 - Nullables are production code with an off switch
 - Sociable tests fast and deterministic but not false success from state based tests
 
+### Testing without mocks part 2
+![image](https://github.com/TomSpencerLondon/LeetCode/assets/27693622/0c76a17f-1cd8-499b-abbf-a0afb6a51808)
