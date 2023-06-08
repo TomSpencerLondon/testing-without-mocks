@@ -325,3 +325,7 @@ The code was a green-field project, so the legacy code patterns weren't needed.
 
 ### Testing without mocks part 2
 ![image](https://github.com/TomSpencerLondon/LeetCode/assets/27693622/0c76a17f-1cd8-499b-abbf-a0afb6a51808)
+
+![image](https://github.com/TomSpencerLondon/LeetCode/assets/27693622/d909e931-3bc6-48f7-9ec2-ffb5131a7b48)
+
+![image](https://github.com/TomSpencerLondon/LeetCode/assets/27693622/3d0fafcb-b6cb-4a13-90d4-cb8e41306922)
