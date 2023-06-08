@@ -76,7 +76,20 @@ describe.only("ROT-13 Service client", () => {
 
         // Challenge #7
         it("fails gracefully when status code has unexpected value", async () => {
-            // to do
+            const expectedError =
+                "Unexpected status from ROT-13 service\n" +
+                `Host: ${HOST}:9999\n` +
+                "Endpoint: /rot13/transform\n" +
+                "Status: 400\n" +
+                `Headers: ${JSON.stringify(VALID_ROT13_HEADERS)}\n` +
+                `Body: ${VALID_ROT13_BODY}`;
+
+            await assert.throwsAsync(() => transformAsync({
+                port: 9999,
+                rot13ServiceStatus: 400,
+                rot13ServiceHeaders: VALID_ROT13_HEADERS,
+                rot13ServiceBody: VALID_ROT13_BODY,
+            }), expectedError);
         });
 
         // Challenge #10 (1 of 4)

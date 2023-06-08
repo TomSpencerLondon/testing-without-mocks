@@ -73,6 +73,17 @@ export class Rot13Client {
 			body: JSON.stringify({ text })
 		});
 
+		if (response.status !== 200) {
+			throw new Error(
+				"Unexpected status from ROT-13 service\n" +
+				`Host: ${HOST}:${port}\n` +
+				`Endpoint: ${TRANSFORM_ENDPOINT}\n` +
+				`Status: ${response.status}\n` +
+				`Headers: ${JSON.stringify(response.headers)}\n` +
+				`Body: ${response.body}`
+			);
+		}
+
 		const parsedBody = JSON.parse(response.body);
 		return parsedBody.transformed;
 	}
