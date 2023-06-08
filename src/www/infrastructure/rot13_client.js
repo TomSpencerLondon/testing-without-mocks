@@ -31,17 +31,11 @@ export class Rot13Client {
 	 * @param [options[].hang] if true, the simulated request never returns
 	 * @returns {Rot13Client} the nulled client
 	 */
-	static createNull(options) {
+	static createNull(options = [ {} ]) {
+		const httpResponses = options.map((response) => nulledHttpResponse(response));
+
 		const httpClient = HttpClient.createNull({
-			[TRANSFORM_ENDPOINT]: [{
-				status: 200,
-				headers: {
-					"content-type": "application/json",
-				},
-				body: JSON.stringify({
-					transformed: "Nulled Rot13Client response",
-				}),
-			}]
+			[TRANSFORM_ENDPOINT]: httpResponses
 		});
 
 		return new Rot13Client(httpClient);
@@ -93,4 +87,19 @@ export class Rot13Client {
 		return this._listener.trackOutput();
 	}
 
+}
+
+function nulledHttpResponse({
+	response = "Nulled Rot13Client response",
+}) {
+
+	return {
+		status: 200,
+		headers: {
+			"content-type": "application/json",
+		},
+		body: JSON.stringify({
+			transformed: response,
+		}),
+	};
 }
