@@ -43,6 +43,7 @@ describe.only("ROT-13 Service client", () => {
         });
 
         async function transformAsync({
+            rot13Client,
             port = IRRELEVANT_PORT,
             text = IRRELEVANT_TEXT,
             correlationId = IRRELEVANT_CORRELATION_ID,
@@ -59,7 +60,7 @@ describe.only("ROT-13 Service client", () => {
                 }
             });
             const httpRequests = httpClient.trackRequests();
-            const rot13Client = new Rot13Client(httpClient);
+            rot13Client = rot13Client ?? new Rot13Client(httpClient);
             const rot13Requests = rot13Client.trackRequests();
             // Act
             const response = await rot13Client.transformAsync(port, text, correlationId);
@@ -93,6 +94,13 @@ describe.only("ROT-13 Service client", () => {
                 text: "my text",
                 correlationId: "my-correlation-id",
             }]);
+        });
+
+        // Challenge #5
+        it("provides default response", async () => {
+            const rot13Client = Rot13Client.createNull();
+            const { response } = await transformAsync({ rot13Client });
+            assert.equal(response, "Nulled Rot13Client response");
         });
 
     });

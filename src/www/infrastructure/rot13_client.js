@@ -32,7 +32,19 @@ export class Rot13Client {
 	 * @returns {Rot13Client} the nulled client
 	 */
 	static createNull(options) {
-		throw new Error("not implemented");
+		const httpClient = HttpClient.createNull({
+			[TRANSFORM_ENDPOINT]: [{
+				status: 200,
+				headers: {
+					"content-type": "application/json",
+				},
+				body: JSON.stringify({
+					transformed: "Nulled Rot13Client response",
+				}),
+			}]
+		});
+
+		return new Rot13Client(httpClient);
 	}
 
 	/** Only for use by tests. (Use a factory method instead.) */
