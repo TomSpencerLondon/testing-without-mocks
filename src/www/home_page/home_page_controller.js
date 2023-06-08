@@ -61,14 +61,17 @@ export class HomePageController {
 	 * @returns {Promise<HttpServerResponse>} HTTP response
 	 */
 	async postAsync(request, config) {
-		const userInput = await parseRequestBodyAsync(request, config.log);
+		const log = config.log.bind({
+			endpoint: ENDPOINT,
+			method: "POST",
+		});
+
+		const userInput = await parseRequestBodyAsync(request, log);
 		if (userInput === null) return homePageView.homePage();
 
-		const output = await this._rot13Client.transformAsync(
-			config.rot13ServicePort,
-			userInput,
-			config.correlationId,
-		);
+		const output = await transformAsync(this._rot13Client, config, log, userInput);
+		if (output === null) return homePageView.homePage("ROT-13 service failed");
+
 		return homePageView.homePage(output);
 	}
 }
@@ -85,11 +88,26 @@ async function parseRequestBodyAsync(request, log) {
 	}
 	catch (err) {
 		log.monitor({
-			endpoint: ENDPOINT,
-			method: "POST",
 			message: "form parse error",
 			error: err.message,
 			form,
+		});
+		return null;
+	}
+}
+
+async function transformAsync(rot13Client, config, log, userInput) {
+	try {
+		return await rot13Client.transformAsync(
+			config.rot13ServicePort,
+			userInput,
+			config.correlationId,
+		);
+	}
+	catch (err) {
+		log.emergency({
+			message: "ROT-13 service error",
+			error: err,
 		});
 		return null;
 	}
