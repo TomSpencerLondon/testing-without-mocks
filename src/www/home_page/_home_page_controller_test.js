@@ -50,9 +50,21 @@ describe.only("Home Page Controller", () => {
 	describe("parse edge cases", () => {
 
 		// Challenge #5
-		it("logs warning when form field not found (and treats request like GET)", async () => {
-			// to do
-		});
+        it("logs warning when form field not found (and treats request like GET)", async () => {
+            const { response, rot13Requests, logOutput } = await postAsync({ body: "" });
+
+            assert.deepEqual(logOutput.data, [{
+                alert: "monitor",
+                endpoint: "/",
+                method: "POST",
+                message: "form parse error",
+                error: "'text' form field not found",
+                form: {},
+            }], "should log a warning");
+
+            assert.deepEqual(response, homePageView.homePage(), "should render home page");
+            assert.deepEqual(rot13Requests.data, [], "shouldn't call ROT-13 service");
+        });
 
 		// Challenge #6
 		it("logs warning when duplicated form field found (and treats request like GET)", async () => {
@@ -97,14 +109,18 @@ describe.only("Home Page Controller", () => {
         const rot13Client = Rot13Client.createNull([{ response: rot13Response }]);
         const rot13Requests = rot13Client.trackRequests();
 
+        const log = Log.createNull();
+        const logOutput = log.trackOutput();
+
         const clock = Clock.createNull();
         const controller = new HomePageController(rot13Client, clock);
 
         const request = HttpServerRequest.createNull({ body });
-        const config = WwwConfig.createTestInstance({ rot13ServicePort, correlationId });
+        const config = WwwConfig.createTestInstance({ log, rot13ServicePort, correlationId });
 
         const response = await controller.postAsync(request, config);
-        return { response, rot13Requests };
+
+        return { response, rot13Requests, logOutput };
     }
 
 });
