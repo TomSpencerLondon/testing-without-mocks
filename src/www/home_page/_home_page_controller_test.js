@@ -67,9 +67,24 @@ describe.only("Home Page Controller", () => {
         });
 
 		// Challenge #6
-		it("logs warning when duplicated form field found (and treats request like GET)", async () => {
-			// to do
-		});
+        it("logs warning when duplicated form field found (and treats request like GET)", async () => {
+            const { response, rot13Requests, logOutput } = await postAsync({ body: "text=one&text=two" });
+
+            assert.deepEqual(logOutput.data, [{
+                alert: "monitor",
+                endpoint: "/",
+                method: "POST",
+                message: "form parse error",
+                error: "should only be one 'text' form field",
+                form: {
+                    text: [ "one", "two" ],
+                },
+            }], "should log a warning");
+
+            assert.deepEqual(response, homePageView.homePage(), "should render home page");
+            assert.deepEqual(rot13Requests.data, [], "shouldn't call ROT-13 service");
+        });
+
 
 	});
 

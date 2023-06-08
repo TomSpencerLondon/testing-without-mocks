@@ -61,23 +61,9 @@ export class HomePageController {
 	 * @returns {Promise<HttpServerResponse>} HTTP response
 	 */
 	async postAsync(request, config) {
-		ensure.signature(arguments, [ HttpServerRequest, WwwConfig ]);  // run-time type checker (ignore me)
+		const userInput = await parseRequestBodyAsync(request, config.log);
+		if (userInput === null) return homePageView.homePage();
 
-		// to do
-		const form = await request.readBodyAsUrlEncodedFormAsync();
-		const textFields = form[INPUT_FIELD_NAME];
-		if (textFields === undefined) {
-			config.log.monitor({
-				endpoint: ENDPOINT,
-				method: "POST",
-				message: "form parse error",
-				error: `'${INPUT_FIELD_NAME}' form field not found`,
-				form,
-			});
-			return homePageView.homePage();
-		}
-
-		const userInput = textFields[0];
 		const output = await this._rot13Client.transformAsync(
 			config.rot13ServicePort,
 			userInput,
@@ -85,5 +71,26 @@ export class HomePageController {
 		);
 		return homePageView.homePage(output);
 	}
+}
 
+async function parseRequestBodyAsync(request, log) {
+	const form = await request.readBodyAsUrlEncodedFormAsync();
+	const textFields = form[INPUT_FIELD_NAME];
+
+	try {
+		if (textFields === undefined) throw new Error(`'${INPUT_FIELD_NAME}' form field not found`);
+		if (textFields.length !== 1) throw new Error(`should only be one '${INPUT_FIELD_NAME}' form field`);
+
+		return textFields[0];
+	}
+	catch (err) {
+		log.monitor({
+			endpoint: ENDPOINT,
+			method: "POST",
+			message: "form parse error",
+			error: err.message,
+			form,
+		});
+		return null;
+	}
 }
