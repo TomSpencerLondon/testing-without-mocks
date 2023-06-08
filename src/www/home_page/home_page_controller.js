@@ -61,6 +61,8 @@ export class HomePageController {
 	 * @returns {Promise<HttpServerResponse>} HTTP response
 	 */
 	async postAsync(request, config) {
+		ensure.signature(arguments, [ HttpServerRequest, WwwConfig ]);  // run-time type checker (ignore me)
+
 		const log = config.log.bind({
 			endpoint: ENDPOINT,
 			method: "POST",
@@ -69,7 +71,7 @@ export class HomePageController {
 		const userInput = await parseRequestBodyAsync(request, log);
 		if (userInput === null) return homePageView.homePage();
 
-		const output = await transformAsync(this._rot13Client, config, log, userInput);
+		const output = await transformAsync(this._rot13Client, config, log, this._clock, userInput);
 		if (output === null) return homePageView.homePage("ROT-13 service failed");
 
 		return homePageView.homePage(output);
@@ -96,12 +98,17 @@ async function parseRequestBodyAsync(request, log) {
 	}
 }
 
-async function transformAsync(rot13Client, config, log, userInput) {
+async function transformAsync(rot13Client, config, log, clock, userInput) {
 	try {
-		return await rot13Client.transformAsync(
+		const { transformPromise, cancelFn } = rot13Client.transform(
 			config.rot13ServicePort,
 			userInput,
 			config.correlationId,
+		);
+		return await clock.timeoutAsync(
+			TIMEOUT_IN_MS,
+			transformPromise,
+			() => timeout(log, cancelFn),
 		);
 	}
 	catch (err) {
@@ -111,4 +118,13 @@ async function transformAsync(rot13Client, config, log, userInput) {
 		});
 		return null;
 	}
+}
+
+function timeout(log, cancelFn) {
+	log.emergency({
+		message: "ROT-13 service timed out",
+		timeoutInMs: TIMEOUT_IN_MS,
+	});
+	cancelFn();
+	return "ROT-13 service timed out";
 }

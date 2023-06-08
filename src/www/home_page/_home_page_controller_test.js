@@ -17,9 +17,8 @@ const IRRELEVANT_CORRELATION_ID = "irrelevant-correlation-id";
 
 describe.only("Home Page Controller", () => {
 
-	describe("happy paths", () => {
+    describe("happy paths", () => {
 
-		// Challenge #1
         it("GET renders home page", async () => {
             const { response } = await getAsync();
             assert.deepEqual(response, homePageView.homePage());
@@ -44,12 +43,11 @@ describe.only("Home Page Controller", () => {
             assert.deepEqual(response, homePageView.homePage("my_response"));
         });
 
-	});
+    });
 
 
-	describe("parse edge cases", () => {
+    describe("parse edge cases", () => {
 
-		// Challenge #5
         it("logs warning when form field not found (and treats request like GET)", async () => {
             const { response, rot13Requests, logOutput } = await postAsync({ body: "" });
 
@@ -66,7 +64,6 @@ describe.only("Home Page Controller", () => {
             assert.deepEqual(rot13Requests.data, [], "shouldn't call ROT-13 service");
         });
 
-		// Challenge #6
         it("logs warning when duplicated form field found (and treats request like GET)", async () => {
             const { response, rot13Requests, logOutput } = await postAsync({ body: "text=one&text=two" });
 
@@ -85,13 +82,11 @@ describe.only("Home Page Controller", () => {
             assert.deepEqual(rot13Requests.data, [], "shouldn't call ROT-13 service");
         });
 
+    });
 
-	});
 
+    describe("ROT-13 service edge cases", () => {
 
-	describe("ROT-13 service edge cases", () => {
-
-		// Challenge #7
         it("fails gracefully, and logs error, when service returns error", async () => {
             const { response, logOutput } = await postAsync({
                 rot13ServicePort: 9999,
@@ -114,49 +109,92 @@ describe.only("Home Page Controller", () => {
             assert.deepEqual(response, homePageView.homePage("ROT-13 service failed"), "should render home page");
         });
 
-		// Challenge #9
-		it("fails gracefully, cancels request, and logs error, when service responds too slowly", async () => {
-			// to do
-		});
+        it("fails gracefully, cancels request, and logs error, when service responds too slowly", async () => {
+            const { responsePromise, clock, logOutput, rot13Requests } = await post({ rot13Hang: true });
 
-	});
+            await clock.advanceNulledClockUntilTimersExpireAsync();
+            const response = await responsePromise;
 
-    async function getAsync() {
-        const rot13Client = Rot13Client.createNull();
-        const clock = Clock.createNull();
-        const controller = new HomePageController(rot13Client, clock);
+            assert.deepEqual(logOutput.data, [{
+                alert: "emergency",
+                endpoint: "/",
+                method: "POST",
+                message: "ROT-13 service timed out",
+                timeoutInMs: 5000,
+            }], "should log an emergency");
 
-        const request = HttpServerRequest.createNull();
-        const config = WwwConfig.createTestInstance();
+            assert.deepEqual(rot13Requests.data, [
+                {
+                    port: IRRELEVANT_PORT,
+                    text: IRRELEVANT_INPUT,
+                    correlationId: IRRELEVANT_CORRELATION_ID,
+                },
+                {
+                    port: IRRELEVANT_PORT,
+                    text: IRRELEVANT_INPUT,
+                    correlationId: IRRELEVANT_CORRELATION_ID,
+                    cancelled: true,
+                },
+            ], "should cancel request");
 
-        const response = await controller.getAsync(request, config);
-        return { response };
-    }
-    async function postAsync({
-                                 body = `text=${IRRELEVANT_INPUT}`,
-                                 rot13ServicePort = IRRELEVANT_PORT,
-                                 correlationId = IRRELEVANT_CORRELATION_ID,
-                                 rot13Response = "irrelevant ROT-13 response",
-                                 rot13Error = undefined,
-                             } = {}) {
-        const rot13Client = Rot13Client.createNull([{
-            response: rot13Response,
-            error: rot13Error,
-        }]);
-        const rot13Requests = rot13Client.trackRequests();
+            assert.deepEqual(response, homePageView.homePage("ROT-13 service timed out"), "should render home page");
+        });
 
-        const log = Log.createNull();
-        const logOutput = log.trackOutput();
-
-        const clock = Clock.createNull();
-        const controller = new HomePageController(rot13Client, clock);
-
-        const request = HttpServerRequest.createNull({ body });
-        const config = WwwConfig.createTestInstance({ log, rot13ServicePort, correlationId });
-
-        const response = await controller.postAsync(request, config);
-
-        return { response, rot13Requests, logOutput };
-    }
+    });
 
 });
+
+
+async function getAsync() {
+    const rot13Client = Rot13Client.createNull();
+    const clock = Clock.createNull();
+    const controller = new HomePageController(rot13Client, clock);
+
+    const request = HttpServerRequest.createNull();
+    const config = WwwConfig.createTestInstance();
+
+    const response = await controller.getAsync(request, config);
+    return { response };
+}
+
+async function postAsync(options) {
+    const { responsePromise, ...remainder } = post(options);
+    return {
+        response: await responsePromise,
+        ...remainder,
+    };
+}
+
+function post({
+                  body = `text=${IRRELEVANT_INPUT}`,
+                  rot13ServicePort = IRRELEVANT_PORT,
+                  correlationId = IRRELEVANT_CORRELATION_ID,
+                  rot13Response = "irrelevant ROT-13 response",
+                  rot13Error = undefined,
+                  rot13Hang = false,
+              } = {}) {
+    const rot13Client = Rot13Client.createNull([{
+        response: rot13Response,
+        error: rot13Error,
+        hang: rot13Hang,
+    }]);
+    const rot13Requests = rot13Client.trackRequests();
+
+    const log = Log.createNull();
+    const logOutput = log.trackOutput();
+
+    const clock = Clock.createNull();
+    const controller = new HomePageController(rot13Client, clock);
+
+    const request = HttpServerRequest.createNull({ body });
+    const config = WwwConfig.createTestInstance({ log, rot13ServicePort, correlationId });
+
+    const responsePromise = controller.postAsync(request, config);
+
+    return {
+        responsePromise,
+        rot13Requests,
+        logOutput,
+        clock,
+    };
+}
