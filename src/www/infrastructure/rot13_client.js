@@ -102,15 +102,24 @@ export class Rot13Client {
 
 function nulledHttpResponse({
 	response = "Nulled Rot13Client response",
+	error = undefined,
 }) {
 
-	return {
-		status: 200,
-		headers: {
-			"content-type": "application/json",
-		},
-		body: JSON.stringify({
-			transformed: response,
-		}),
-	};
+	if (error !== undefined) {
+		return {
+			status: 500,
+			headers: {},
+			body: error,
+		};
+	} else {
+		return {
+			status: 200,
+			headers: {
+				"content-type": "application/json",
+			},
+			body: JSON.stringify({
+				transformed: response,
+			}),
+		};
+	}
 }

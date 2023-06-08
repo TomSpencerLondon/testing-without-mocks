@@ -161,6 +161,23 @@ describe.only("ROT-13 Service client", () => {
         // Challenge #8
         it("simulates errors", async () => {
             // to do
+            const rot13Client = Rot13Client.createNull([{ error: "my error" }]);
+
+            const expectedError =
+                "Unexpected status from ROT-13 service\n" +
+                `Host: ${HOST}:9999\n` +
+                "Endpoint: /rot13/transform\n" +
+                "Status: 500\n" +
+                "Headers: {}\n" +
+                "Body: my error";
+
+            await assert.throwsAsync(
+                () => transformAsync({
+                    rot13Client,
+                    port: 9999,
+                }),
+                expectedError,
+            );
         });
 
         // Bonus Challenge #1
