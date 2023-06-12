@@ -45,7 +45,7 @@ describe.only("ROT-13 Service client", () => {
         // Challenge #3
         it("parses response", async () => {
             // to do
-            const { response } = await transformAsync({
+            const {response} = await transformAsync({
                 rot13ServiceStatus: VALID_ROT13_STATUS,
                 rot13ServiceHeaders: VALID_ROT13_HEADERS,
                 rot13ServiceBody: VALID_ROT13_BODY
@@ -57,7 +57,7 @@ describe.only("ROT-13 Service client", () => {
         // Challenge #4
         it("tracks requests", async () => {
             // to do
-            const { rot13Requests } = await transformAsync({
+            const {rot13Requests} = await transformAsync({
                 port: 9999,
                 text: "my text",
                 correlationId: "my-correlation-id",
@@ -140,19 +140,19 @@ describe.only("ROT-13 Service client", () => {
         // Challenge #5
         it("provides default response", async () => {
             const rot13Client = Rot13Client.createNull();
-            const { response } = await transformAsync({ rot13Client });
+            const {response} = await transformAsync({rot13Client});
             assert.equal(response, "Nulled Rot13Client response");
         });
 
         // Challenge #6
         it("can configure multiple responses", async () => {
             const rot13Client = Rot13Client.createNull([
-                { response: "response 1"},
-                { response: "response 2"},
+                {response: "response 1"},
+                {response: "response 2"},
             ]);
 
-            const { response: response1 } = await transformAsync({ rot13Client });
-            const { response: response2 } = await transformAsync({ rot13Client });
+            const {response: response1} = await transformAsync({rot13Client});
+            const {response: response2} = await transformAsync({rot13Client});
 
             assert.equal(response1, "response 1");
             assert.equal(response2, "response 2");
@@ -160,24 +160,14 @@ describe.only("ROT-13 Service client", () => {
 
         // Challenge #8
         it("simulates errors", async () => {
-            // to do
-            const rot13Client = Rot13Client.createNull([{ error: "my error" }]);
-
-            const expectedError =
-                "Unexpected status from ROT-13 service\n" +
-                `Host: ${HOST}:9999\n` +
-                "Endpoint: /rot13/transform\n" +
-                "Status: 500\n" +
-                "Headers: {}\n" +
-                "Body: my error";
-
-            await assert.throwsAsync(
-                () => transformAsync({
-                    rot13Client,
-                    port: 9999,
-                }),
-                expectedError,
-            );
+            const rot13Client = Rot13Client.createNull([{error: "my error"}]);
+            await assertFailureAsync({
+                rot13Client,
+                rot13ServiceStatus: 500,
+                rot13ServiceHeaders: {},
+                rot13ServiceBody: "my error",
+                message: "Unexpected status from ROT-13 service",
+            });
         });
 
         // Bonus Challenge #1
@@ -213,4 +203,32 @@ async function transformAsync({
     const response = await rot13Client.transformAsync(port, text, correlationId);
 
     return {response, rot13Requests, httpRequests};
+}
+
+async function assertFailureAsync({
+   rot13Client,
+   port = 42,
+   rot13ServiceStatus = VALID_ROT13_STATUS,
+   rot13ServiceHeaders = VALID_ROT13_HEADERS,
+   rot13ServiceBody = VALID_ROT13_BODY,
+   message,
+}) {
+    const expectedError =
+        `${message}\n` +
+        `Host: ${HOST}:${port}\n` +
+        "Endpoint: /rot13/transform\n" +
+        `Status: ${rot13ServiceStatus}\n` +
+        `Headers: ${JSON.stringify(rot13ServiceHeaders)}\n` +
+        `Body: ${rot13ServiceBody}`;
+
+    await assert.throwsAsync(
+        () => transformAsync({
+            rot13Client,
+            port,
+            rot13ServiceStatus,
+            rot13ServiceHeaders,
+            rot13ServiceBody,
+        }),
+        expectedError,
+    );
 }
